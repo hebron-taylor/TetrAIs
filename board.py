@@ -32,6 +32,7 @@ S = [['.....',
       '...0.',
       '.....']]
 
+
 Z = [['.....',
       '.....',
       '.00..',
@@ -188,8 +189,8 @@ def draw_pieces(screen, grid):
 
 
 def get_shape():
-    #return Piece(0, 5, random.choice(TETROMINOS))
-    return Piece(2, 0, TETROMINOS[0])
+    return Piece(0, 5, random.choice(TETROMINOS))
+    #return Piece(2, 0, TETROMINOS[0])
 
 
 def convert_shape_format(shape):
@@ -205,7 +206,7 @@ def convert_shape_format(shape):
                 positions.append((shape.x + j, shape.y + i))
 
     for i, pos in enumerate(positions):
-        positions[i] = (pos[0], pos[1])
+        positions[i] = (pos[0], pos[1]-3)
     return positions
 
 
@@ -214,12 +215,10 @@ def valid_space(shape, grid):
     accepted_pos = [j for sub in accepted_pos for j in sub]
 
     formatted = convert_shape_format(shape)
-    #print(accepted_pos)
     for pos in formatted:
-        #print(pos)
         if pos not in accepted_pos:
-            #if pos[0] > -1:
-            return False
+            if pos[1] >= BOARD_HEIGHT:
+                return False
     return True
 
 
@@ -239,7 +238,7 @@ def main(screen):
     locked_positions = {}
     grid = create_grid(locked_positions)
     current_piece = get_shape()
-    #next_piece = get_shape()
+    next_piece = get_shape()
     run = True
     clock = pygame.time.Clock()
     fall_time = 0
@@ -257,10 +256,12 @@ def main(screen):
         if fall_time / 1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
-            if not(valid_space(current_piece, grid)) and current_piece.y >= BOARD_HEIGHT:
+            print(current_piece.y)
+            # not(valid_space(current_piece, grid)) and
+            if not(valid_space(current_piece, grid)) or current_piece.y >= BOARD_HEIGHT/BLOCK_SIZE:
+                print("Here")
                 current_piece.y -= 1
                 change_piece = True
-        print(current_piece.y)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -293,7 +294,7 @@ def main(screen):
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
             if y > -1:
-                print(x, y)
+                #print(x, y)
                 grid[y][x] = current_piece.color
 
         draw_pieces(screen=screen, grid=grid)
@@ -304,9 +305,9 @@ def main(screen):
             for pos in shape_pos:
                 p = (pos[0], pos[1])
                 locked_positions[p] = current_piece.color
-        #current_piece = next_piece
-        #next_piece = get_shape()
-        change_piece = False
+            current_piece = next_piece
+            next_piece = get_shape()
+            change_piece = False
         pygame.display.update()
 
 
