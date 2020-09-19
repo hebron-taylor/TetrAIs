@@ -174,6 +174,8 @@ def draw_grid(screen):
         for y in range(board_y_start, board_y_end, BLOCK_SIZE):
             rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
             pygame.draw.rect(screen, WHITE, rect,1 )
+
+    pygame.draw.rect(screen, RED, (board_x_start, board_y_start, BOARD_WIDTH, BOARD_HEIGHT), 5)
     return
 
 def draw_pieces(screen, grid):
@@ -219,8 +221,6 @@ def valid_space(shape, grid):
         if pos not in accepted_pos:
             if pos[1] > -1:
                 return False
-            # if pos[0] < 0 or pos[0] >= BOARD_WIDTH/BLOCK_SIZE:
-            #     return False
     return True
 
 
@@ -257,10 +257,7 @@ def main(screen):
         if fall_time / 1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
-            print(current_piece.y)
-            # not(valid_space(current_piece, grid)) and
             if not(valid_space(current_piece, grid)) or current_piece.y >= BOARD_HEIGHT/BLOCK_SIZE:
-                print("Here")
                 current_piece.y -= 1
                 change_piece = True
 
@@ -310,6 +307,8 @@ def main(screen):
             change_piece = False
         pygame.display.update()
 
+        if check_lost(locked_positions):
+            run = False
 
 
 def main_menu(screen):
