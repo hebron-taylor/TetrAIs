@@ -189,8 +189,8 @@ def draw_pieces(screen, grid):
 
 
 def get_shape():
-    return Piece(0, 5, random.choice(TETROMINOS))
-    #return Piece(2, 0, TETROMINOS[0])
+    return Piece(2, -1, random.choice(TETROMINOS))
+    #return Piece(0, 5, TETROMINOS[-1])
 
 
 def convert_shape_format(shape):
@@ -206,19 +206,21 @@ def convert_shape_format(shape):
                 positions.append((shape.x + j, shape.y + i))
 
     for i, pos in enumerate(positions):
-        positions[i] = (pos[0], pos[1]-3)
+        positions[i] = (pos[0], pos[1])
     return positions
 
 
 def valid_space(shape, grid):
-    accepted_pos = [[(i,j) for j in range(int(BOARD_WIDTH/BLOCK_SIZE)) if grid[i][j] == (0,0,0)] for i in range(int(BOARD_HEIGHT/BLOCK_SIZE))]
+    accepted_pos = [[(j,i) for j in range(int(BOARD_WIDTH/BLOCK_SIZE)) if grid[i][j] == (0,0,0)] for i in range(int(BOARD_HEIGHT/BLOCK_SIZE))]
     accepted_pos = [j for sub in accepted_pos for j in sub]
 
     formatted = convert_shape_format(shape)
     for pos in formatted:
         if pos not in accepted_pos:
-            if pos[1] >= BOARD_HEIGHT:
+            if pos[1] > -1:
                 return False
+            # if pos[0] < 0 or pos[0] >= BOARD_WIDTH/BLOCK_SIZE:
+            #     return False
     return True
 
 
@@ -231,7 +233,6 @@ def check_lost(positions):
 
 
 
-    #print(row_ctr, col_ctr)
 def main(screen):
 
 
@@ -294,7 +295,6 @@ def main(screen):
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
             if y > -1:
-                #print(x, y)
                 grid[y][x] = current_piece.color
 
         draw_pieces(screen=screen, grid=grid)
