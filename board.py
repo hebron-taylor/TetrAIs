@@ -8,6 +8,12 @@ BOARD_WIDTH = 200
 BOARD_HEIGHT = 400
 BLOCK_SIZE = 20
 
+board_x_start = int((WINDOW_WIDTH-BOARD_WIDTH)/2)
+board_x_end = int((board_x_start + BOARD_WIDTH))
+board_y_start = int((WINDOW_HEIGHT-BOARD_HEIGHT)/2)
+board_y_end = int((board_y_start + BOARD_HEIGHT))
+
+
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 GREEN = (0, 255, 0)
@@ -165,10 +171,6 @@ def create_grid(locked_positions = {}):
 
 
 def draw_grid(screen):
-    board_x_start = int((WINDOW_WIDTH-BOARD_WIDTH)/2)
-    board_x_end = int((board_x_start + BOARD_WIDTH))
-    board_y_start = int((WINDOW_HEIGHT-BOARD_HEIGHT)/2)
-    board_y_end = int((board_y_start + BOARD_HEIGHT))
 
     for x in range(board_x_start, board_x_end, BLOCK_SIZE):
         for y in range(board_y_start, board_y_end, BLOCK_SIZE):
@@ -179,11 +181,6 @@ def draw_grid(screen):
     return
 
 def draw_pieces(screen, grid):
-
-    board_x_start = int((WINDOW_WIDTH-BOARD_WIDTH)/2)
-    board_x_end = int((board_x_start + BOARD_WIDTH))
-    board_y_start = int((WINDOW_HEIGHT-BOARD_HEIGHT)/2)
-    board_y_end = int((board_y_start + BOARD_HEIGHT))
 
     for x in range(len(grid)):
         for y in range(len(grid[x])):
@@ -231,6 +228,38 @@ def check_lost(positions):
             return True
     return False
 
+def draw_next_shape(shape, screen):
+    sx = board_x_start - 100
+    sy = board_y_start - 100
+
+    format = shape.tetromino[shape.rotation % len(shape.tetromino)]
+
+
+    for i, line in enumerate(format):
+        row = list(line)
+        for j, column in enumerate(row):
+            if column == '0':
+                pygame.draw.rect(screen, shape.color, (sx+j*BLOCK_SIZE, sy+i*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE),0)
+
+def clear_rows(grid, locked_positions):
+    inc = 0
+    for i in range(len(grid)-1, -1, -1):
+        row = grid[i]
+        if (0,0,0) not in row:
+            inc += 1
+            ind = i
+            for j in range(len(row)):
+                try:
+                    del locked_positions[(j, i)]
+                except:
+                    continue
+
+    if inc > 0:
+        for key in sorted(list(locked_positions), key=lambda x: x[1]) [::-1]:
+            x, y = key
+            if y < ind:
+                new_key  = (x, y+inc)
+                locked_positions[new_key] = locked_positions.pop(key)
 
 
 def main(screen):
@@ -305,6 +334,8 @@ def main(screen):
             current_piece = next_piece
             next_piece = get_shape()
             change_piece = False
+            clear_rows(grid=grid, locked_positions=locked_positions)
+        draw_next_shape(shape=next_piece,screen=screen )
         pygame.display.update()
 
         if check_lost(locked_positions):
