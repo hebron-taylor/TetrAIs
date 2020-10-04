@@ -295,7 +295,7 @@ def main(screen):
     run = True
     clock = pygame.time.Clock()
     fall_time = 0
-    fall_speed = .27
+    fall_speed = 1
     change_piece = False
     level = 1
     score = 0
@@ -308,6 +308,8 @@ def main(screen):
 
         fall_time += clock.get_rawtime()
         clock.tick()
+
+
 
         if fall_time / 1000 > fall_speed:
             fall_time = 0
@@ -363,10 +365,10 @@ def main(screen):
             current_lines_cleared = clear_rows(grid=grid, locked_positions=locked_positions)
             total_lines_cleared += current_lines_cleared
             if total_lines_cleared % 10 == 0 and current_lines_cleared > 0:
+                fall_speed -= .075
                 level += 1
         else:
             current_lines_cleared = 0
-
 
 
 
