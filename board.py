@@ -145,24 +145,32 @@ class Piece():
         self.color = TETROMINOS_COLORS[TETROMINOS.index(tetromino)]
         self.rotation = 0
 
-#create a grid in which we will keep track of all the positions that new pieces cannot move to
-#note that row == the conventional notion of "y" as rows move in the y direction and
-#          col == the conventional notion of "x" as cols move in the x direction hence
-# when representing an (x,y) cooridnates as an xy postion on the gameplay grid we use col as x and row as y
-#but when accessing the physical python gameplay grid structure we access as grid[row][col]
-'''
- _ _ _
-| | | |
-|_|_|_|
-| | | |
-|_|_|_|
-|x| | |
-|_|_|_|
 
-For example row 3 col 1 is the same as x=1, y=3 (if y is more positive as we move down )
 
-'''
 def create_grid(locked_positions = {}):
+    '''
+    DESCRIPTION: create a grid in which we will keep track of all the positions that new pieces cannot move to
+
+    INPUT(s): locked_positions (Dictionary): A dictionary where a (x,y) key will correspond to a color value associated with
+                                           a given tetromino
+
+    RETURN: grid (2D array): 2D array which corresponds to the current tetris game grid
+
+    NOTES: row == the conventional notion of "y" as rows move in the y direction and
+          col == the conventional notion of "x" as cols move in the x direction hence
+          when representing an (x,y) cooridnates as an xy postion on the gameplay grid we use col as x and row as y
+          but when accessing the physical python gameplay grid structure we access as grid[row][col]
+         _ _ _
+        | | | |
+        |_|_|_|
+        | | | |
+        |_|_|_|
+        |x| | |
+        |_|_|_|
+
+        For example row 3 col 1 is the same as x=1, y=3 (if y is more positive as we move down )
+    '''
+
     grid = [[(0,0,0) for _ in range(int(BOARD_WIDTH/BLOCK_SIZE))] for _ in range(int(BOARD_HEIGHT/BLOCK_SIZE))]
     for row in range(len(grid)):
         for col in range(len(grid[row])):
@@ -173,6 +181,13 @@ def create_grid(locked_positions = {}):
 
 
 def draw_grid(screen):
+    '''
+    DESCRIPTION: Draws empty game board to screen
+
+    INPUT(s): screen (pygame surface): surface on which game will be played
+
+    RETURN: NONE
+    '''
     #
     # for x in range(board_x_start, board_x_end, BLOCK_SIZE):
     #     for y in range(board_y_start, board_y_end, BLOCK_SIZE):
@@ -182,18 +197,55 @@ def draw_grid(screen):
     pygame.draw.rect(screen, SILVER, (board_x_start, board_y_start, BOARD_WIDTH, BOARD_HEIGHT), 2)
     return
 
+
 def draw_pieces(screen, grid):
+    '''
+    DESCRIPTION: draw tetromino pieces onto user screen
+
+    INPUT(s): screen (pygame surface): surface on which game will be played
+              grid   (2D array)      : 2D array which corresponds to the current tetris game grid
+
+    RETURN: NONE
+    '''
 
     for x in range(len(grid)):
         for y in range(len(grid[x])):
             pygame.draw.rect(screen, grid[x][y], (board_x_start + (BLOCK_SIZE*y),board_y_start + (BLOCK_SIZE*x), BLOCK_SIZE, BLOCK_SIZE))
+    return
 
 
 def get_shape():
+    '''
+    DESCRIPTION: Get random tetromino piece
+
+    INPUT(s): NONE
+
+    RETURN: NONE
+    '''
     return Piece(2, -1, random.choice(TETROMINOS))
 
 
 def convert_shape_format(shape):
+    '''
+    DESCRIPTION: Convert passed tetromino into format that can be used as a reference for where a piece is located
+                 on the tetris grid
+
+    INPUT(s): shape (Piece): contains information relating to the passed tetromino (position, rotation, color)
+
+    RETURN: positions (list): A list containing the (x, y) cooridnates of the current tetromino with respect to
+                              its location on the the game grid
+
+    NOTES:  Recall one tetromino is a list as follows
+                          '.....',
+                          '......',
+                          '..00..',
+                          '.00...',
+                          '.....'
+            we then interate through each row and column. A '0' indicates a block that corresponds to this piece
+            plus the pieces (x,y) position should be placed at this repective location in the game grid. (So one piece of the
+            block would be placed at (2+x, 2+y) where x and y correspond to the current positon of the piece on the game grid)
+    '''
+
     positions = []
     format = shape.tetromino[shape.rotation % len(shape.tetromino)]
 
@@ -205,12 +257,23 @@ def convert_shape_format(shape):
             if column == '0':
                 positions.append((shape.x + j, shape.y + i))
 
+    #used to account for any offset (may not be necessary the way I initialized a tetrominos x,y position)
     for i, pos in enumerate(positions):
         positions[i] = (pos[0], pos[1])
     return positions
 
 
 def valid_space(shape, grid):
+    '''
+    DESCRIPTION: Determine if a the passed shape is in a valid position on the game grid
+
+    INPUT(s): shape (Piece)    : contains information relating to the passed tetromino (position, rotation, color)
+              grid  (2D array) : 2D array which corresponds to the current tetris game grid
+
+    RETURN: Boolean value based on if the shape is in a valid postion on the game board
+            (FALSE if position is not valid
+             TRUE  if position is valid)
+    '''
     accepted_pos = [[(j,i) for j in range(int(BOARD_WIDTH/BLOCK_SIZE)) if grid[i][j] == (0,0,0)] for i in range(int(BOARD_HEIGHT/BLOCK_SIZE))]
     accepted_pos = [j for sub in accepted_pos for j in sub]
 
@@ -223,6 +286,13 @@ def valid_space(shape, grid):
 
 
 def check_lost(positions):
+    '''
+    DESCRIPTION: Get random tetromino piece
+
+    INPUT(s): NONE
+
+    RETURN: NONE
+    '''
     for pos in positions:
         x, y = pos
         if y < 1:
@@ -230,6 +300,13 @@ def check_lost(positions):
     return False
 
 def draw_game_stats(screen, next_piece, level, lines, score):
+    '''
+    DESCRIPTION: Get random tetromino piece
+
+    INPUT(s): NONE
+
+    RETURN: NONE
+    '''
     font = pygame.font.SysFont('couriernew', 15)
     next_piece_title = font.render('Next Piece', 1, SILVER)
     level_title = font.render('Level', 1, SILVER)
@@ -264,6 +341,13 @@ def draw_game_stats(screen, next_piece, level, lines, score):
 
 
 def clear_rows(grid, locked_positions):
+    '''
+    DESCRIPTION: Get random tetromino piece
+
+    INPUT(s): NONE
+
+    RETURN: NONE
+    '''
     inc = 0
     for i in range(len(grid)-1, -1, -1):
         row = grid[i]
@@ -286,7 +370,13 @@ def clear_rows(grid, locked_positions):
 
 
 def main(screen):
+    '''
+    DESCRIPTION: Get random tetromino piece
 
+    INPUT(s): NONE
+
+    RETURN: NONE
+    '''
 
     locked_positions = {}
     grid = create_grid(locked_positions)
@@ -389,6 +479,13 @@ def main(screen):
 
 
 def main_menu(screen):
+    '''
+    DESCRIPTION: Get random tetromino piece
+
+    INPUT(s): NONE
+
+    RETURN: NONE
+    '''
     main(screen)
 
 
