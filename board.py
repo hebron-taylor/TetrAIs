@@ -222,7 +222,9 @@ def get_shape():
 
     RETURN: NONE
     '''
-    return Piece(2, -1, random.choice(TETROMINOS))
+    #return Piece(2, -1, random.choice(TETROMINOS))
+    return Piece(2, -1, TETROMINOS[2])
+
 
 
 def convert_shape_format(shape):
@@ -287,11 +289,16 @@ def valid_space(shape, grid):
 
 def check_lost(positions):
     '''
-    DESCRIPTION: Get random tetromino piece
+    DESCRIPTION: check to see if game grid indicates a player has lost
 
-    INPUT(s): NONE
+    INPUT(s): positions (list): A list containing the (x, y) cooridnates of the current tetromino with respect to
+                              its location on the the game grid
 
-    RETURN: NONE
+    RETURN: Boolean value indicating the status of the game
+            (if TRUE than user has lost the game, if FALSE the game continues)
+
+    NOTES: Function check to see if any of the (x,y) cooridnates in position go above the game grid boundary
+           (touch the top of the tetris game grid)
     '''
     for pos in positions:
         x, y = pos
@@ -301,12 +308,19 @@ def check_lost(positions):
 
 def draw_game_stats(screen, next_piece, level, lines, score):
     '''
-    DESCRIPTION: Get random tetromino piece
+    DESCRIPTION: Draws relevant game stats on the user screen
+                 (next piece, current level, number of lines cleared, and current score)
 
-    INPUT(s): NONE
+    INPUT(s): screen (pygame surface): surface on which game will be played
+              next_piece (Piece): contains information relating to the next tetromino that will fall (position, rotation, color)
+                                  (really just want the shape so the user can see what the next tetromino will be)
+              level (int) : integer indicating the current level
+              lines (int) : integer indicating the number of lines cleared
+              score (int) : integer indicating the score
 
     RETURN: NONE
     '''
+
     font = pygame.font.SysFont('couriernew', 15)
     next_piece_title = font.render('Next Piece', 1, SILVER)
     level_title = font.render('Level', 1, SILVER)
@@ -315,8 +329,6 @@ def draw_game_stats(screen, next_piece, level, lines, score):
     level = font.render(str(level), 1, SILVER)
     lines = font.render(str(lines), 1, SILVER)
     score = font.render(str(score), 1, SILVER)
-
-
 
     sx = board_x_end + 35
     sy = board_y_start + 35
@@ -338,16 +350,26 @@ def draw_game_stats(screen, next_piece, level, lines, score):
     screen.blit(level, (sx , sy + 130))
     screen.blit(lines, (sx , sy + 180))
     screen.blit(score, (sx , sy + 230))
+    return
 
 
 def clear_rows(grid, locked_positions):
     '''
-    DESCRIPTION: Get random tetromino piece
+    DESCRIPTION: Clear all "filled" rows (in accordance to the rules of tetris)
 
-    INPUT(s): NONE
+    INPUT(s): locked_positions (Dictionary): A dictionary where a (x,y) key will correspond to a color value associated with
+                                           a given tetromino
+              grid (2D array): 2D array which corresponds to the current tetris game grid
 
-    RETURN: NONE
+    RETURN: inc (int): An integer indicating how many rows were cleared
+
+    NOTES: If a row is full then there will be no empty squares within that row (meaning (0,0,0) or the black color will not be present)
+           Through this we can iterate through every row in the grid and delete all colored blocks in a given row IF not empty squares exist in that row
+           This is just done by deleting the those blocks from locked_positions. Now if we delete a block via "del" it means it no longer exists which, however,
+           what really needs to happen is all the blocks above the deleted block need to shift down by one (or by how many rows were suceessviely deleted). This is
+           where the "inc" variable come in as it will be used to
     '''
+
     inc = 0
     for i in range(len(grid)-1, -1, -1):
         row = grid[i]
