@@ -354,7 +354,6 @@ def draw_game_stats(screen, next_piece, level, lines, score):
     screen.blit(score, (sx , sy + 230))
     return
 
-# TODO: FIX BUG
 def clear_rows(grid, locked_positions):
     '''
     DESCRIPTION: Clear all "filled" rows (in accordance to the rules of tetris)
