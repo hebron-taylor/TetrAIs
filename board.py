@@ -366,10 +366,25 @@ def clear_rows(grid, locked_positions):
     RETURN: inc (int): An integer indicating how many rows were cleared
 
     NOTES: If a row is full then there will be no empty squares within that row (meaning (0,0,0) or the black color will not be present)
-           Through this we can iterate through every row in the grid and delete all colored blocks in a given row IF not empty squares exist in that row
+           Through this we can iterate through every row in the grid and delete all colored blocks in a given row IF no empty squares exist in that row
            This is just done by deleting the those blocks from locked_positions. Now if we delete a block via "del" it means it no longer exists which, however,
            what really needs to happen is all the blocks above the deleted block need to shift down by one (or by how many rows were suceessviely deleted). This is
-           where the "inc" variable come in as it will be used to tell how many rows we should shift the current game pieces down by. We should note that
+           where the "inc" variable come in as it will be used to tell how many rows we should shift the current game pieces down by. We should note a few things:
+
+           1. We iterate from the bottom of the game grid to the top of the game grid (visually from the bottom of the screen to the top). We do this so that
+              while shifting blocks down we don't overwite any blocks (This is why the for loop are iterating backwards)
+           2. Also recall rows will increment from the top of the game grid to the bottom of the game grid (ie row 0 is at the top of the screen and row 20 will be at the bottom of the screen).
+           3. The shift list is a list of tuples that contains the current row index cleared along with the the current total count of rows cleared. Take the examples below (where . is empty space and 0 is block)
+
+                0|....|      0|....|    In this case everything between rows 5 and 7 should move down by 1, but everything above row 5 should move down by 2
+                1|....|      1|....|
+                2|.00.|      2|....|
+                3|.00.|  =>  3|....|
+                4|.000|      4|.00.|
+                5|0000|      5|.00.|
+                6|.000|      6|.000|
+                7|0000|      7|.000|
+
     '''
 
     inc = 0
@@ -395,6 +410,8 @@ def clear_rows(grid, locked_positions):
         for key in sorted(list(locked_positions), key=lambda x: x[1]) [::-1]:
             x, y = key
 
+            #if the current y locked postion is less than index of the next cleared row (so visually the locked position is above the row that was cleared on the game board)
+            #we need to update the amount of row the locked postion should be shifted down by
             if (len(shift) != 0):
                 if y < shift[0][0]:
                     full_row_idx, shift_val = shift.pop(0)
@@ -419,9 +436,9 @@ def clear_rows(grid, locked_positions):
 
 def main(screen):
     '''
-    DESCRIPTION: Get random tetromino piece
+    DESCRIPTION: Where the main game loop resides. All game play activity happens here.
 
-    INPUT(s): NONE
+    INPUT(s): screen (pygame surface): surface on which game will be played
 
     RETURN: NONE
     '''
@@ -448,14 +465,16 @@ def main(screen):
         clock.tick()
 
 
-
+        #Determine how fast the blocks should fall on the screeen
         if fall_time / 1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
-            if not(valid_space(current_piece, grid)) or current_piece.y >= BOARD_HEIGHT/BLOCK_SIZE:
+            if not(valid_space(current_piece, grid)) or current_piece.y >= BOARD_HEIGHT/BLOCK_SIZE: #tells us when the current piece has hit the bottom of the playable game grid
                 current_piece.y -= 1
                 change_piece = True
+        #End Fall time
 
+        #Get keyboard strokes and determine what moving block should do with respect to key stroke
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -480,10 +499,12 @@ def main(screen):
                     current_piece.rotation += 1
                     if not(valid_space(current_piece, grid)):
                         current_piece.rotation -= 1
+        #End keyoard strokes
 
 
-        shape_pos = convert_shape_format(current_piece)
+        shape_pos = convert_shape_format(current_piece) #convert the tetrimono into a something that can be put into a python grid
 
+        #color the grid respective of the current piece
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
             if y > -1:
@@ -493,23 +514,24 @@ def main(screen):
         draw_grid(screen=screen)
 
 
+        #determine what to do once current pieces touches another piece or the bottom of the grid
         if change_piece:
             for pos in shape_pos:
                 p = (pos[0], pos[1])
-                locked_positions[p] = current_piece.color
+                locked_positions[p] = current_piece.color #update locked_positions because that piece is now locked in place and cannot move unless the row can be cleared
             current_piece = next_piece
             next_piece = get_shape()
-            change_piece = False
+            change_piece = False        #dont' execite this code until the next piece touches another pience
             current_lines_cleared = clear_rows(grid=grid, locked_positions=locked_positions)
             total_lines_cleared += current_lines_cleared
-            if total_lines_cleared % 10 == 0 and current_lines_cleared > 0:
+            if total_lines_cleared % 10 == 0 and current_lines_cleared > 0: #update speed based on score
                 fall_speed -= .075
                 level += 1
         else:
             current_lines_cleared = 0
 
 
-
+        #calculate game score
         if current_lines_cleared == 1:
             score += 40 * (level + 1)
         if current_lines_cleared == 2:
@@ -522,6 +544,7 @@ def main(screen):
         draw_game_stats(screen=screen, next_piece=next_piece, level=level, lines=total_lines_cleared, score=score)
         pygame.display.update()
 
+        #check if the game lost condition is triggered
         if check_lost(locked_positions):
             run = False
 
