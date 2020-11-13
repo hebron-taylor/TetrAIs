@@ -188,11 +188,13 @@ def draw_grid(screen):
 
     RETURN: NONE
     '''
-    #
-    # for x in range(board_x_start, board_x_end, BLOCK_SIZE):
-    #     for y in range(board_y_start, board_y_end, BLOCK_SIZE):
-    #         rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
-    #         pygame.draw.rect(screen, (211,211,211), rect,1 )
+
+    #comment in for grid lines on game board
+    for x in range(board_x_start, board_x_end, BLOCK_SIZE):
+        for y in range(board_y_start, board_y_end, BLOCK_SIZE):
+            rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+            pygame.draw.rect(screen, (211,211,211), rect,1 )
+    #end grid lines code
 
     pygame.draw.rect(screen, SILVER, (board_x_start, board_y_start, BOARD_WIDTH, BOARD_HEIGHT), 2)
     return
@@ -352,7 +354,7 @@ def draw_game_stats(screen, next_piece, level, lines, score):
     screen.blit(score, (sx , sy + 230))
     return
 
-
+# TODO: FIX BUG
 def clear_rows(grid, locked_positions):
     '''
     DESCRIPTION: Clear all "filled" rows (in accordance to the rules of tetris)
@@ -367,27 +369,51 @@ def clear_rows(grid, locked_positions):
            Through this we can iterate through every row in the grid and delete all colored blocks in a given row IF not empty squares exist in that row
            This is just done by deleting the those blocks from locked_positions. Now if we delete a block via "del" it means it no longer exists which, however,
            what really needs to happen is all the blocks above the deleted block need to shift down by one (or by how many rows were suceessviely deleted). This is
-           where the "inc" variable come in as it will be used to
+           where the "inc" variable come in as it will be used to tell how many rows we should shift the current game pieces down by. We should note that
     '''
 
     inc = 0
+    shift = []
     for i in range(len(grid)-1, -1, -1):
         row = grid[i]
         if (0,0,0) not in row:
             inc += 1
             ind = i
+            shift.append((ind,inc))
             for j in range(len(row)):
                 try:
                     del locked_positions[(j, i)]
                 except:
+                    print("Could not delete Row!")
                     continue
 
+
+
+
+    if inc > 0:
+        full_row_idx, shift_val = shift.pop(0)
+        for key in sorted(list(locked_positions), key=lambda x: x[1]) [::-1]:
+            x, y = key
+
+            if (len(shift) != 0):
+                if y < shift[0][0]:
+                    full_row_idx, shift_val = shift.pop(0)
+
+            if y < full_row_idx:
+                new_key  = (x, y+shift_val)
+                locked_positions[new_key] = locked_positions.pop(key)
+
+
+
+    """
     if inc > 0:
         for key in sorted(list(locked_positions), key=lambda x: x[1]) [::-1]:
             x, y = key
             if y < ind:
                 new_key  = (x, y+inc)
                 locked_positions[new_key] = locked_positions.pop(key)
+    """
+
     return inc
 
 
