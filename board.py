@@ -1,5 +1,8 @@
 import pygame
+#import pygame.locals
+
 import random
+
 
 WINDOW_WIDTH = 400
 WINDOW_HEIGHT = 600
@@ -224,8 +227,8 @@ def get_shape():
 
     RETURN: NONE
     '''
-    #return Piece(2, -1, random.choice(TETROMINOS))
-    return Piece(2, -1, TETROMINOS[2])
+    return Piece(2, -1, random.choice(TETROMINOS))
+    #return Piece(2, -1, TETROMINOS[2])
 
 
 
@@ -472,6 +475,17 @@ def main(screen):
                 current_piece.y -= 1
                 change_piece = True
         #End Fall time
+
+        #new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
+        #pygame.event.post(new_event)
+
+        if (change_piece):
+            #get the game board status
+
+            #determine the optimal position
+
+            #put piece into correct row/col
+
 
         #Get keyboard strokes and determine what moving block should do with respect to key stroke
         for event in pygame.event.get():
