@@ -1,144 +1,21 @@
+#################################################################################################
+## -FILENAME: board.py                                               -LAST EDITED: 11/26/2020
+##
+## -DESCRIPTION: Contains main game code for tetris
+##
+## -NOTES: ALL CAPTIALIZED VARAIBLES ARE CONSTANTS FOUND IN SETTINGS.PY
+##
+## -CREATOR: Hebron Taylor                                             -DATE CREATED: 11/26/2020
+#################################################################################################
+
 import pygame
-#import pygame.locals
+import pygame.locals
 
 import random
 
+import utils
+from settings import *
 
-WINDOW_WIDTH = 400
-WINDOW_HEIGHT = 600
-
-BOARD_WIDTH = 200
-BOARD_HEIGHT = 400
-BLOCK_SIZE = 20
-
-#board_x_start = int((WINDOW_WIDTH-BOARD_WIDTH)/2)
-board_x_start = 50
-board_x_end = int((board_x_start + BOARD_WIDTH))
-#board_y_start = int((WINDOW_HEIGHT-BOARD_HEIGHT)/2)
-board_y_start = 150
-board_y_end = int((board_y_start + BOARD_HEIGHT))
-
-
-BLACK = (0, 0, 0)
-WHITE = (200, 200, 200)
-GREEN = (0, 255, 0)
-RED = (255, 0 , 0)
-TEAL  = (0, 255, 255)
-YELLOW =  (255, 255, 0)
-ORANGE = (255, 165, 0)
-BLUE = (0, 0, 255)
-PURPLE = (128, 0, 128)
-SILVER = (192,192,192)
-
-
-# SHAPE FORMATS
-
-S = [['.....',
-      '......',
-      '..00..',
-      '.00...',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..00.',
-      '...0.',
-      '.....']]
-
-
-Z = [['.....',
-      '.....',
-      '.00..',
-      '..00.',
-      '.....'],
-     ['.....',
-      '..0..',
-      '.00..',
-      '.0...',
-      '.....']]
-
-I = [['..0..',
-      '..0..',
-      '..0..',
-      '..0..',
-      '.....'],
-     ['.....',
-      '0000.',
-      '.....',
-      '.....',
-      '.....']]
-
-O = [['.....',
-      '.....',
-      '.00..',
-      '.00..',
-      '.....']]
-
-J = [['.....',
-      '.0...',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..00.',
-      '..0..',
-      '..0..',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '...0.',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..0..',
-      '.00..',
-      '.....']]
-
-L = [['.....',
-      '...0.',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..0..',
-      '..00.',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '.0...',
-      '.....'],
-     ['.....',
-      '.00..',
-      '..0..',
-      '..0..',
-      '.....']]
-
-T = [['.....',
-      '..0..',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..00.',
-      '..0..',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '..0..',
-      '.....'],
-     ['.....',
-      '..0..',
-      '.00..',
-      '..0..',
-      '.....']]
-
-
-TETROMINOS = [S, Z, I, O, J, L, T]
-TETROMINOS_COLORS = [GREEN, RED, TEAL, YELLOW, ORANGE, BLUE, PURPLE]
 
 class Piece():
     def __init__(self, x, y, tetromino):
@@ -480,6 +357,7 @@ def main(screen):
         #pygame.event.post(new_event)
 
         if (change_piece):
+            pass
             #get the game board status
 
             #determine the optimal position
@@ -543,6 +421,9 @@ def main(screen):
         else:
             current_lines_cleared = 0
 
+        print('\n\n')
+        print(locked_positions)
+        print('\n\n')
 
         #calculate game score
         if current_lines_cleared == 1:
