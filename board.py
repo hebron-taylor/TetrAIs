@@ -423,6 +423,7 @@ def main(screen):
 
         print('\n\n')
         print(locked_positions)
+        print(grid)
         print('\n\n')
 
         #calculate game score
