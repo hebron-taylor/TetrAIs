@@ -15,12 +15,12 @@ BOARD_WIDTH = 200
 BOARD_HEIGHT = 400
 BLOCK_SIZE = 20
 
-board_x_start = 50
-board_x_end = int((board_x_start + BOARD_WIDTH))
-board_y_start = 150
-board_y_end = int((board_y_start + BOARD_HEIGHT))
-#board_x_start = int((WINDOW_WIDTH-BOARD_WIDTH)/2)
-#board_y_start = int((WINDOW_HEIGHT-BOARD_HEIGHT)/2)
+BOARD_X_START = 50
+BOARD_X_END = int((BOARD_X_START + BOARD_WIDTH))
+BOARD_Y_START = 150
+BOARD_Y_END = int((BOARD_Y_START + BOARD_HEIGHT))
+#BOARD_X_START = int((WINDOW_WIDTH-BOARD_WIDTH)/2)
+#BOARD_Y_START = int((WINDOW_HEIGHT-BOARD_HEIGHT)/2)
 
 # Game colors
 BLACK = (0, 0, 0)
