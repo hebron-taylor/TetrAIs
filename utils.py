@@ -144,6 +144,3 @@ def get_bumpiness(locked_positions):
 
     #print(bumpiness)
     return bumpiness
-
-
-get_completed_lines(pic)
