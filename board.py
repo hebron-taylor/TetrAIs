@@ -11,6 +11,9 @@
 import pygame
 import pygame.locals
 
+import sys
+import copy
+import time
 import random
 
 import utils
@@ -26,44 +29,94 @@ test=0
 def optimal_position(locked_positions, grid, current_piece):
     sorted_pos = sorted(list(locked_positions), key=lambda x: (x[0], x[1]))                                          #sort locked_positions by coloumn, then by row (recall that the lower the row is the higher on the game board the piece )
 
-
-
     seen = set()
     top_most_pieces = [(a,b) for a, b in sorted_pos if not (a in seen or seen.add(a))]                                  #we use only the top most pieces of each column to find the height difference between each coloumn (recall how sorted_pos was sorted)
-    print(top_most_pieces)
+    #print(top_most_pieces)
 
-    current_piece.x = top_most_pieces[0][0]    #col
-    current_piece.y = top_most_pieces[0][1]     #row
-    print("x: %d, y:%d, rot:%d" % (current_piece.x, current_piece.y, current_piece.rotation))
+    #current_piece.x = top_most_pieces[0][0]    #col
+    #current_piece.y = top_most_pieces[0][1]     #row
+    #print("x: %d, y:%d, rot:%d" % (current_piece.x, current_piece.y, current_piece.rotation))
 
 
     #scrub the current piece from the grid (this is temprary)
-    for row in range(len(grid)):
-        for col in range(len(grid[row])):
-            if grid[row][col] != (0,0,0) and (col, row) not in locked_positions:
-    #            print(grid[row][col], row, col)
-                grid[row][col] = (0,0,0)
+    # for row in range(len(grid)):
+    #     for col in range(len(grid[row])):
+    #         if grid[row][col] != (0,0,0) and (col, row) not in locked_positions:
+    #             grid[row][col] = (0,0,0)
 
 
-    for rotation in current_piece.tetromino:
-        print(rotation)
-
-    testX = 0
-    testY = 10
-    current_piece.x = testX
-    current_piece.y = testY
-    current_piece.rotation = 3
-
-    if gameUtils.valid_space(shape=current_piece, grid=grid):
-        print("valid at", (testX, testY))
-    else:
-        print("invalid at", (testX, testY))
+    #note down any columns that don't have a locked postion
+    empty_cols = []
+    for i in range(0,10):
+        if not any(i in piece for piece in top_most_pieces):
+            empty_cols.append(i)
 
 
-    # if gameUtils.valid_space(shape=current_piece, grid=grid):
-    #     print("valid at", (current_piece.x, current_piece.y))
-    # else:
-    #     print("invalid at", (current_piece.x, current_piece.y))
+    best_score = sys.maxsize
+    best_piece = gameUtils.Piece(0,0,TETROMINOS[0])
+
+
+    #Iterate through all rotations for the current tetromino
+    for i, rotation in enumerate(current_piece.tetromino):
+        current_piece.rotation = i
+        #print("ROTATION:", i)
+
+        #iterate through all the top most locked postions
+        for piece in top_most_pieces:
+            #set the current piece x,y, to the first possible valid location above the current locked postions
+            current_piece.x = piece[0]
+            current_piece.y = piece[1] - len(rotation)
+
+            #create a copy of the locked position to use as a template
+            future_locked_postions = copy.deepcopy(locked_positions)
+
+            #See if the x,y, and rotation is a valid position on the tetris grid
+            if gameUtils.valid_space(shape=current_piece, grid=grid):
+                #print("valid at", (current_piece.x, current_piece.y), gameUtils.convert_shape_format(current_piece))
+                shape_pos = gameUtils.convert_shape_format(current_piece)
+                for pos in shape_pos:
+                    p = (pos[0], pos[1])
+                    future_locked_postions[p] = current_piece.color #update locked_positions because that piece is now locked in place and cannot move unless the row can be cleared
+
+                total_score = utils.get_aggregate_height(future_locked_postions) +  utils.get_holes(future_locked_postions) - utils.get_completed_lines(future_locked_postions) + utils.get_bumpiness(future_locked_postions)
+                #print(total_score)
+                if(total_score < best_score):
+                    best_score =  total_score
+                    best_piece = copy.deepcopy(current_piece)
+
+        #iterate any row positions not in locked positions
+        for col in empty_cols:
+            current_piece.x = col
+            current_piece.y = len(rotation)
+
+            #create a copy of the locked position to use as a template
+            future_locked_postions = copy.deepcopy(locked_positions)
+
+            #See if the x,y, and rotation is a valid position on the tetris grid
+            if gameUtils.valid_space(shape=current_piece, grid=grid):
+                #print("valid at", (current_piece.x, current_piece.y), gameUtils.convert_shape_format(current_piece))
+                shape_pos = gameUtils.convert_shape_format(current_piece)
+                for pos in shape_pos:
+                    p = (pos[0], pos[1])
+                    future_locked_postions[p] = current_piece.color #update locked_positions because that piece is now locked in place and cannot move unless the row can be cleared
+
+                total_score = utils.get_aggregate_height(future_locked_postions) +  utils.get_holes(future_locked_postions) - utils.get_completed_lines(future_locked_postions) + utils.get_bumpiness(future_locked_postions)
+                #print(total_score)
+                if(total_score < best_score):
+                    print(total_score, best_score)
+                    best_score = total_score
+                    best_piece = copy.deepcopy(current_piece)
+
+                # print(utils.get_aggregate_height(future_locked_postions))
+                # print(utils.get_holes(future_locked_postions))
+                # print(utils.get_completed_lines(future_locked_postions))
+                # print(utils.get_bumpiness(future_locked_postions))
+
+
+    print("Best Score: ", best_score, best_piece.rotation, gameUtils.convert_shape_format(best_piece))
+    return best_piece
+
+
 
 
 def main(screen):
@@ -88,6 +141,8 @@ def main(screen):
     score = 0
     current_lines_cleared = 0
     total_lines_cleared = 0
+    piece_placed = True
+    desired_location = gameUtils.Piece(0,0,TETROMINOS[0])
 
     while run:
         screen.fill(BLACK)
@@ -106,16 +161,27 @@ def main(screen):
                 change_piece = True
         #End Fall time
 
-        #new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
-        #pygame.event.post(new_event)
+        # new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
+        # pygame.event.post(new_event)
 
-        if (change_piece):
-            pass
-            #get the game board status
 
-            #determine the optimal position
-
-            #put piece into correct row/col
+        if (not piece_placed):
+            if(current_piece.rotation % len(current_piece.tetromino) != desired_location.rotation):
+                new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
+                pygame.event.post(new_event)
+                # new_event = pygame.event.Event(pygame.locals.KEYUP, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
+                # pygame.event.post(new_event)
+                # time.sleep(1)
+            if(current_piece.y == desired_location.y):
+                pass
+            if(current_piece.x < desired_location.x):
+                new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_RIGHT, mod=pygame.locals.KMOD_NONE) #create the event
+                pygame.event.post(new_event)
+            elif(current_piece.x > desired_location.x):
+                new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_LEFT, mod=pygame.locals.KMOD_NONE) #create the event
+                pygame.event.post(new_event)
+            else:
+                piece_placed = True
 
 
         #Get keyboard strokes and determine what moving block should do with respect to key stroke
@@ -166,6 +232,8 @@ def main(screen):
             current_piece = next_piece
             next_piece = gameUtils.get_shape()
             change_piece = False        #dont' execite this code until the next piece touches another pience
+            piece_placed = False
+            desired_location = optimal_position(locked_positions=copy.deepcopy(locked_positions),grid=grid, current_piece=copy.deepcopy(current_piece))
             current_lines_cleared = gameUtils.clear_rows(grid=grid, locked_positions=locked_positions)
             total_lines_cleared += current_lines_cleared
             if total_lines_cleared % 10 == 0 and current_lines_cleared > 0: #update speed based on score

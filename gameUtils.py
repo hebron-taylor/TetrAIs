@@ -26,6 +26,11 @@ class Piece():
 #################################################################################
 ##############################HELPER FUNCTIONS###################################
 #################################################################################
+
+    
+
+#################################################################################
+
 def check_lost(positions):
     '''
     DESCRIPTION: check to see if game grid indicates a player has lost
@@ -146,26 +151,14 @@ def convert_shape_format(shape):
     positions = []
     format = shape.tetromino[shape.rotation % len(shape.tetromino)]
 
-
-    '''
-     ['.....',
-      '..0..',
-      '.000.',
-      '.....',
-      '.....']
-     '''
     for i, line in enumerate(format):
         row = list(line)
         for j, column in enumerate(row):
             if column == '0':
-                positions.append((shape.x + j, shape.y + i))
-    print(positions)
-    #used to account for any offset (may not be necessary the way I initialized a tetrominos x,y position)
-    for i, pos in enumerate(positions):
-        positions[i] = (pos[0]-2, pos[1])
-        #positions[i] = (pos[0], pos[1])
-        #positions[i] = (pos[0]-2, pos[1]-1)
-    print(positions)
+                positions.append((shape.x + j - 2, shape.y + i)) #-2 used to account for initialized x position
+
+    #print(positions)
+
     return positions
 #################################################################################
 
