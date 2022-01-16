@@ -26,6 +26,11 @@ pic5_grid = [[(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), 
 
 
 test=0
+# def test(current_piece):
+#     print(current_piece.get_height())
+#     print(current_piece.get_width())
+
+
 def optimal_position(locked_positions, grid, current_piece):
     sorted_pos = sorted(list(locked_positions), key=lambda x: (x[0], x[1]))                                          #sort locked_positions by coloumn, then by row (recall that the lower the row is the higher on the game board the piece )
 
@@ -79,7 +84,8 @@ def optimal_position(locked_positions, grid, current_piece):
                     future_locked_postions[p] = current_piece.color #update locked_positions because that piece is now locked in place and cannot move unless the row can be cleared
 
                 total_score = utils.get_aggregate_height(future_locked_postions) +  utils.get_holes(future_locked_postions) - utils.get_completed_lines(future_locked_postions) + utils.get_bumpiness(future_locked_postions)
-                #print(total_score)
+                #print("lp ", total_score, "  ", gameUtils.convert_shape_format(current_piece))
+                #print("\t Height: ", utils.get_aggregate_height(future_locked_postions), " Holes: ",utils.get_holes(future_locked_postions), " Bump: ", utils.get_bumpiness(future_locked_postions) )
                 if(total_score < best_score):
                     best_score =  total_score
                     best_piece = copy.deepcopy(current_piece)
@@ -87,7 +93,7 @@ def optimal_position(locked_positions, grid, current_piece):
         #iterate any row positions not in locked positions
         for col in empty_cols:
             current_piece.x = col
-            current_piece.y = len(rotation)
+            current_piece.y = int(BOARD_HEIGHT/BLOCK_SIZE) - len(rotation) - 1
 
             #create a copy of the locked position to use as a template
             future_locked_postions = copy.deepcopy(locked_positions)
@@ -101,9 +107,9 @@ def optimal_position(locked_positions, grid, current_piece):
                     future_locked_postions[p] = current_piece.color #update locked_positions because that piece is now locked in place and cannot move unless the row can be cleared
 
                 total_score = utils.get_aggregate_height(future_locked_postions) +  utils.get_holes(future_locked_postions) - utils.get_completed_lines(future_locked_postions) + utils.get_bumpiness(future_locked_postions)
-                #print(total_score)
+                #print("ec ",total_score, "  ", gameUtils.convert_shape_format(current_piece))
+                #print("\t Height: ", utils.get_aggregate_height(future_locked_postions), " Holes: ",utils.get_holes(future_locked_postions), " Bump: ", utils.get_bumpiness(future_locked_postions) )
                 if(total_score < best_score):
-                    print(total_score, best_score)
                     best_score = total_score
                     best_piece = copy.deepcopy(current_piece)
 
@@ -166,15 +172,17 @@ def main(screen):
 
 
         if (not piece_placed):
+
+            #First check if the desired location is reachable w/o extra manuevers
+            print("Height: %d" %(desired_location.get_height()))
+            print("Width: %d " % (desired_location.get_width()))
+
             if(current_piece.rotation % len(current_piece.tetromino) != desired_location.rotation):
                 new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
                 pygame.event.post(new_event)
-                # new_event = pygame.event.Event(pygame.locals.KEYUP, key=pygame.locals.K_UP, mod=pygame.locals.KMOD_NONE) #create the event
-                # pygame.event.post(new_event)
-                # time.sleep(1)
-            if(current_piece.y == desired_location.y):
-                pass
-            if(current_piece.x < desired_location.x):
+            # if(current_piece.y == desired_location.y):
+            #     pass
+            elif(current_piece.x < desired_location.x):
                 new_event = pygame.event.Event(pygame.locals.KEYDOWN, key=pygame.locals.K_RIGHT, mod=pygame.locals.KMOD_NONE) #create the event
                 pygame.event.post(new_event)
             elif(current_piece.x > desired_location.x):
@@ -284,6 +292,7 @@ if __name__ == '__main__':
     try:
         if test:
             optimal_position(locked_positions=pic5_lp,grid=pic5_grid, current_piece=gameUtils.get_shape())
+            #test(current_piece=gameUtils.get_shape())
         else:
             pygame.init()
             screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))

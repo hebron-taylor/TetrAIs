@@ -22,12 +22,32 @@ class Piece():
         self.color = TETROMINOS_COLORS[TETROMINOS.index(tetromino)]
         self.rotation = 0
 
+    def get_height(self):
+        return len(self.tetromino[self.rotation % len(self.tetromino)])
+
+    def get_width(self):
+        format = self.tetromino[self.rotation % len(self.tetromino)]
+        max_width = 0
+
+        for i, line in enumerate(format):
+            row = list(line)
+            width = 0
+            for j, column in enumerate(row):
+                if column == '0':
+                    width += 1
+            if(width > max_width):
+                max_width = width
+        return max_width
+
+
+
+
 
 #################################################################################
 ##############################HELPER FUNCTIONS###################################
 #################################################################################
 
-    
+
 
 #################################################################################
 
